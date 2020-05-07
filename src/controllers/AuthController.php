@@ -105,6 +105,7 @@ class AuthController extends Controller
                 // Get the session duration
                 $generalConfig = Craft::$app->getConfig()->getGeneral();
                 $duration = $generalConfig->userSessionDuration;
+                // TODO - session
 
                 $userSession = Craft::$app->getUser();
                 $userSession->loginByUserId($user->id);
@@ -127,6 +128,9 @@ class AuthController extends Controller
      */
     public function actionLogout()
     {
+        $userSession = Craft::$app->getUser();
+        $userSession->logout(true);
+
         $this->_auth0->logout();
         // TODO: env in config - or same as craft core one
         $return_to = 'https://' . $_SERVER['HTTP_HOST'];
