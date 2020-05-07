@@ -2,19 +2,19 @@
     "name": "angellco/auth0",
     "description": "Use Auth0 SS0 alongside the core Craft login.",
     "type": "craft-plugin",
-    "version": "1.0.0",
     "keywords": [
         "craft",
         "cms",
         "craftcms",
         "craft-plugin",
-        "auth0"
+        "auth0",
+        "sso"
     ],
     "support": {
         "docs": "https://github.com/angell-co/auth0/blob/master/README.md",
         "issues": "https://github.com/angell-co/auth0/issues"
     },
-    "license": "MIT",
+    "license": "proprietary",
     "authors": [
         {
             "name": "Angell & Co",
@@ -22,7 +22,8 @@
         }
     ],
     "require": {
-        "craftcms/cms": "^3.0.0"
+        "craftcms/cms": "^3.0.0",
+        "yiisoft/yii2-authclient": "~2.1.0"
     },
     "autoload": {
         "psr-4": {
