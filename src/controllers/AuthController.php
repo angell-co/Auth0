@@ -10,8 +10,11 @@
 
 namespace angellco\auth0\controllers;
 
-use angellco\auth0\Auth0;
+use angellco\auth0\Auth0 as Auth0Plugin;
 
+use Auth0\SDK\Auth0;
+use Auth0\SDK\Exception\ApiException;
+use Auth0\SDK\Exception\CoreException;
 use Craft;
 use craft\web\Controller;
 
@@ -22,37 +25,83 @@ use craft\web\Controller;
  */
 class AuthController extends Controller
 {
+    // Private Properties
+    // =========================================================================
+    /**
+     * @var Auth0
+     */
+    private $_auth0;
 
     // Protected Properties
     // =========================================================================
 
     /**
-     * @var    bool|array Allows anonymous access to this controller's actions.
-     *         The actions must be in 'kebab-case'
-     * @access protected
+     * @inheritdoc
      */
-    protected $allowAnonymous = ['index', 'do-something'];
+    protected $allowAnonymous = self::ALLOW_ANONYMOUS_LIVE;
 
     // Public Methods
     // =========================================================================
 
     /**
-     * @return mixed
+     * AuthController constructor.
+     *
+     * @param       $id
+     * @param       $module
+     * @param array $config
+     *
+     * @throws CoreException
      */
-    public function actionIndex()
+    public function __construct($id, $module, $config = [])
     {
-        $result = 'Welcome to the AuthController actionIndex() method';
+        $this->_auth0 = new Auth0([
+            'domain' => getenv('AUTH0_DOMAIN'),
+            'client_id' => getenv('AUTH0_CLIENT_ID'),
+            'client_secret' => getenv('AUTH0_CLIENT_SECRET'),
+            'redirect_uri' => getenv('AUTH0_CALLBACK_URL'),
+            'scope' => 'openid profile email',
+        ]);
 
-        return $result;
+        parent::__construct($id, $module, $config);
     }
 
     /**
-     * @return mixed
+     * Redirects to the Auth0 login page.
      */
-    public function actionDoSomething()
+    public function actionLogin()
     {
-        $result = 'Welcome to the AuthController actionDoSomething() method';
+        $this->_auth0->login();
+    }
 
-        return $result;
+    /**
+     * Handles the Auth0 callback with either a successfully authenticated
+     * user session or not.
+     *
+     * @throws ApiException
+     * @throws CoreException
+     * @throws \yii\base\ExitException
+     */
+    public function actionCallback()
+    {
+        $userInfo = $this->_auth0->getUser();
+
+        if (!$userInfo) {
+            // We have no user info
+            // See below for how to add a login link
+            Craft::dd('FAIL');
+        } else {
+            // User is authenticated
+            // See below for how to display user information
+            Craft::dd(['SUCCESS',$userInfo]);
+        }
+    }
+
+    /**
+     * @throws \yii\base\ExitException
+     */
+    public function actionLogout()
+    {
+        $this->_auth0->logout();
+        Craft::dd('DONE');
     }
 }
