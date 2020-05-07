@@ -55,6 +55,7 @@ class AuthController extends Controller
     public function __construct($id, $module, $config = [])
     {
         $this->_auth0 = new Auth0([
+            // TODO: envs in config
             'domain' => getenv('AUTH0_DOMAIN'),
             'client_id' => getenv('AUTH0_CLIENT_ID'),
             'client_secret' => getenv('AUTH0_CLIENT_SECRET'),
@@ -83,16 +84,41 @@ class AuthController extends Controller
      */
     public function actionCallback()
     {
-        $userInfo = $this->_auth0->getUser();
+        $auth0UserInfo = $this->_auth0->getUser();
 
-        if (!$userInfo) {
+        if (!$auth0UserInfo) {
             // We have no user info
             // See below for how to add a login link
             Craft::dd('FAIL');
         } else {
-            // User is authenticated
-            // See below for how to display user information
-            Craft::dd(['SUCCESS',$userInfo]);
+            // User is authenticated with Auth0
+
+            // Get the Craft user if we can
+            $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($auth0UserInfo['email']);
+
+            // There isn’t one, so create it
+            if (!$user) {
+                Craft::dd(['SUCCESS','No Craft User']);
+            } else {
+                // There is one, so log them in
+
+                // Get the session duration
+                $generalConfig = Craft::$app->getConfig()->getGeneral();
+                $duration = $generalConfig->userSessionDuration;
+
+                $userSession = Craft::$app->getUser();
+                $userSession->loginByUserId($user->id);
+                $userSession->removeReturnUrl();
+                Craft::dd(['SUCCESS',[
+                    'Is Admin?' => $userSession->getIsAdmin(),
+                    'Craft User' => [
+                        'id' => $user->id,
+                        'firstName' => $user->firstName,
+                        'lastName' => $user->lastName
+                    ]
+                ]]);
+            }
+
         }
     }
 
@@ -102,6 +128,11 @@ class AuthController extends Controller
     public function actionLogout()
     {
         $this->_auth0->logout();
-        Craft::dd('DONE');
+        // TODO: env in config - or same as craft core one
+        $return_to = 'https://' . $_SERVER['HTTP_HOST'];
+        // TODO: env in config
+        $logout_url = sprintf('https://%s/v2/logout?client_id=%s&returnTo=%s', getenv('AUTH0_DOMAIN'), getenv('AUTH0_CLIENT_ID'), $return_to);
+        header('Location: ' . $logout_url);
+        exit;
     }
 }
