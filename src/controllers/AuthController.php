@@ -17,6 +17,7 @@ use Auth0\SDK\Exception\ApiException;
 use Auth0\SDK\Exception\CoreException;
 use Craft;
 use craft\web\Controller;
+use craft\web\View;
 
 /**
  * @author    Angell & Co
@@ -86,19 +87,22 @@ class AuthController extends Controller
     {
         $auth0UserInfo = $this->_auth0->getUser();
 
+        $return = [];
+
         if (!$auth0UserInfo) {
             // We have no user info
-            // See below for how to add a login link
-            Craft::dd('FAIL');
+            $return['error'] = 'Failed to log in';
         } else {
             // User is authenticated with Auth0
+            $return['success'] = 'Logged in.';
+            $return['auth0User'] = $auth0UserInfo;
 
             // Get the Craft user if we can
             $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($auth0UserInfo['email']);
 
             // There isn’t one, so create it
             if (!$user) {
-                Craft::dd(['SUCCESS','No Craft User']);
+                $return['user'] = false;
             } else {
                 // There is one, so log them in
 
@@ -110,17 +114,12 @@ class AuthController extends Controller
                 $userSession = Craft::$app->getUser();
                 $userSession->loginByUserId($user->id);
                 $userSession->removeReturnUrl();
-                Craft::dd(['SUCCESS',[
-                    'Is Admin?' => $userSession->getIsAdmin(),
-                    'Craft User' => [
-                        'id' => $user->id,
-                        'firstName' => $user->firstName,
-                        'lastName' => $user->lastName
-                    ]
-                ]]);
-            }
 
+                $return['user'] = $user;
+            }
         }
+
+        return $this->renderTemplate('auth0-test.html', ['authdata'=>$return], View::TEMPLATE_MODE_SITE);
     }
 
     /**
@@ -133,7 +132,7 @@ class AuthController extends Controller
 
         $this->_auth0->logout();
         // TODO: env in config - or same as craft core one
-        $return_to = 'https://' . $_SERVER['HTTP_HOST'];
+        $return_to = 'https://' . $_SERVER['HTTP_HOST'].'/auth0-test';
         // TODO: env in config
         $logout_url = sprintf('https://%s/v2/logout?client_id=%s&returnTo=%s', getenv('AUTH0_DOMAIN'), getenv('AUTH0_CLIENT_ID'), $return_to);
         header('Location: ' . $logout_url);
