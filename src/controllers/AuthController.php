@@ -143,7 +143,8 @@ class AuthController extends Controller
                 $user->email = $auth0UserInfo['email'];
                 $user->username = $user->email;
 
-                // TODO: set this from the $auth0UserInfo metadata via config params, or leave to the BeforeUserCreatedEvent?
+                // Set some basic details on the user profile, if these need to be different then they can be overridden
+                // in the BeforeUserCreated event.
                 $nameParts = explode(' ', $auth0UserInfo['name']);
                 if (count($nameParts) >= 2) {
                     $user->firstName = $nameParts[0];
@@ -184,8 +185,6 @@ class AuthController extends Controller
                 }
             }
 
-            // TODO: check we have a user after user creation, throw hard error if not
-
             // There is now a user, so fire an event before we log them in to give plugins
             // a chance to either fail the login or modify the user
             // TODO: allow event to cancel the login
@@ -214,6 +213,9 @@ class AuthController extends Controller
 
     /**
      * TODO
+     *
+     * ENV the logout return URI
+     * Also handle being logged out of Auth0 but still logged in to Craft, what happens then?
      */
     public function actionLogout()
     {
