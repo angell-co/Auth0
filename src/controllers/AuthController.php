@@ -12,6 +12,7 @@ namespace angellco\auth0\controllers;
 
 use angellco\auth0\Auth0 as Auth0Plugin;
 
+use angellco\auth0\events\BeforeUserCreated;
 use angellco\auth0\models\Settings;
 use Auth0\SDK\Auth0;
 use Auth0\SDK\Exception\ApiException;
@@ -33,6 +34,14 @@ use yii\web\Response;
  */
 class AuthController extends Controller
 {
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event RegisterUserActionsEvent The event that is triggered before a user is created for the first time
+     */
+    const EVENT_BEFORE_USER_CREATED = 'beforeUserCreated';
+
     // Private Properties
     // =========================================================================
     /**
@@ -135,7 +144,12 @@ class AuthController extends Controller
                     $user->lastName = $nameParts[1];
                 }
 
-                // TODO: Raise event so plugins can modify the user before its created
+                // Give plugins a chance to modify the user before its created
+                $event = new BeforeUserCreated([
+                    'user' => $user,
+                    'auth0UserInfo' => $auth0UserInfo,
+                ]);
+                $this->trigger(self::EVENT_BEFORE_USER_CREATED, $event);
 
                 // Validate and save it
                 if (
