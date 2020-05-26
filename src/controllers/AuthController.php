@@ -12,12 +12,19 @@ namespace angellco\auth0\controllers;
 
 use angellco\auth0\Auth0 as Auth0Plugin;
 
+use angellco\auth0\models\Settings;
 use Auth0\SDK\Auth0;
 use Auth0\SDK\Exception\ApiException;
 use Auth0\SDK\Exception\CoreException;
 use Craft;
+use craft\elements\User;
+use craft\errors\ElementNotFoundException;
+use craft\errors\MissingComponentException;
 use craft\web\Controller;
-use craft\web\View;
+use craft\helpers\User as UserHelper;
+use yii\base\Exception;
+use yii\web\BadRequestHttpException;
+use yii\web\Response;
 
 /**
  * @author    Angell & Co
@@ -34,7 +41,7 @@ class AuthController extends Controller
     private $_auth0;
 
     /**
-     * @var bool|\craft\base\Model|null
+     * @var bool|Settings|null
      */
     private $_settings;
 
@@ -85,51 +92,99 @@ class AuthController extends Controller
      * Handles the Auth0 callback with either a successfully authenticated
      * user session or not.
      *
+     * @return Response|null
      * @throws ApiException
      * @throws CoreException
-     * @throws \yii\base\ExitException
+     * @throws \Throwable
+     * @throws ElementNotFoundException
+     * @throws MissingComponentException
+     * @throws Exception
+     * @throws BadRequestHttpException
      */
     public function actionCallback()
     {
         $auth0UserInfo = $this->_auth0->getUser();
 
-        $return = [];
+        $users = Craft::$app->getUsers();
+        $userSession = Craft::$app->getUser();
+        $session = Craft::$app->getSession();
 
+        // Check if we don’t have any user info from Auth0 and bail if not
         if (!$auth0UserInfo) {
-            // We have no user info
-            $return['error'] = 'Failed to log in';
+
+            $session->setError(UserHelper::getLoginFailureMessage());
+
+            return null;
+
         } else {
-            // User is authenticated with Auth0
-            $return['success'] = 'Logged in.';
-            $return['auth0User'] = $auth0UserInfo;
 
             // Get the Craft user if we can
-            $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($auth0UserInfo['email']);
+            $user = $users->getUserByUsernameOrEmail($auth0UserInfo['email']);
 
-            // There isn’t one, so create it
+            // There isn’t one, so create it first
             if (!$user) {
-                $return['user'] = false;
-            } else {
-                // There is one, so log them in
 
-                // Get the session duration
-                $generalConfig = Craft::$app->getConfig()->getGeneral();
-                $duration = $generalConfig->userSessionDuration;
-                // TODO - session
+                $user = new User();
+                $user->email = $auth0UserInfo['email'];
+                $user->username = $user->email;
 
-                $userSession = Craft::$app->getUser();
-                $userSession->loginByUserId($user->id);
-                $userSession->removeReturnUrl();
+                // TODO: set this from the metadata via config params
+                $nameParts = explode(' ', $auth0UserInfo['name']);
+                if (count($nameParts) >= 2) {
+                    $user->firstName = $nameParts[0];
+                    $user->lastName = $nameParts[1];
+                }
 
-                $return['user'] = $user;
+                // TODO: Raise event so plugins can modify the user before its created
+
+                // Validate and save it
+                if (
+                    !$user->validate(null, false) ||
+                    !Craft::$app->getElements()->saveElement($user, false)
+                ) {
+                    $session->setError(Craft::t('app', 'Couldn’t save user.'));
+                    return null;
+                }
+
+                // Manually activate the user
+                $users->activateUser($user);
+
+                // Get the user group
+                $userGroupHandle = $this->_settings->userGroupHandle;
+                $userGroup = null;
+                if ($userGroupHandle) {
+                    $userGroup = Craft::$app->getUserGroups()->getGroupByHandle($userGroupHandle);
+                }
+
+                // Assign them to the specified user group or default
+                if ($userGroup) {
+                    $users->assignUserToGroups($user->id, [$userGroup->id]);
+                } else {
+                    $users->assignUserToDefaultGroup($user);
+                }
             }
+
+            // TODO: check we have a user after user creation, throw hard error if not
+
+            // Log them in
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            Craft::$app->getUser()->login($user, $generalConfig->userSessionDuration);
+
+            // Get the return URL
+            $returnUrl = $userSession->getReturnUrl();
+
+            // Clear it out
+            $userSession->removeReturnUrl();
+
+            // Set the logged in notice and redirect
+            $session->setNotice(Craft::t('app', 'Logged in.'));
+            return $this->redirectToPostedUrl($userSession->getIdentity(), $returnUrl);
         }
 
-        return $this->renderTemplate('auth0-test.html', ['authdata'=>$return], View::TEMPLATE_MODE_SITE);
     }
 
     /**
-     * @throws \yii\base\ExitException
+     * TODO
      */
     public function actionLogout()
     {

@@ -27,4 +27,5 @@ return [
     'clientId' => getenv('AUTH0_CLIENT_ID'),
     'clientSecret' => getenv('AUTH0_CLIENT_SECRET'),
     'callbackUrl' => getenv('AUTH0_CALLBACK_URL'),
+    'userGroupHandle' => null
 ];

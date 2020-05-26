@@ -44,4 +44,9 @@ class Settings extends Model
      * @var string
      */
     public $callbackUrl;
+
+    /**
+     * @var string
+     */
+    public $userGroupHandle;
 }
