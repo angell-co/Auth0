@@ -14,13 +14,13 @@ use craft\elements\User;
 use yii\base\Event;
 
 /**
- * BeforeUserCreated class.
+ * BeforeUserLoginEvent class.
  *
  * @author    Angell & Co
  * @package   Auth0
  * @since     1.0.0
  */
-class BeforeUserCreated extends Event
+class BeforeUserLoginEvent extends Event
 {
     // Properties
     // =========================================================================

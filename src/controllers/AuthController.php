@@ -12,7 +12,8 @@ namespace angellco\auth0\controllers;
 
 use angellco\auth0\Auth0 as Auth0Plugin;
 
-use angellco\auth0\events\BeforeUserCreated;
+use angellco\auth0\events\BeforeUserCreatedEvent;
+use angellco\auth0\events\BeforeUserLoginEvent;
 use angellco\auth0\models\Settings;
 use Auth0\SDK\Auth0;
 use Auth0\SDK\Exception\ApiException;
@@ -38,9 +39,14 @@ class AuthController extends Controller
     // =========================================================================
 
     /**
-     * @event RegisterUserActionsEvent The event that is triggered before a user is created for the first time
+     * @event BeforeUserCreatedEvent The event that is triggered before a user is created for the first time
      */
-    const EVENT_BEFORE_USER_CREATED = 'beforeUserCreated';
+    const EVENT_BEFORE_USER_CREATED = 'auth0_beforeUserCreated';
+
+    /**
+     * @event BeforeUserLoginEvent The event that is triggered before a user is logged in
+     */
+    const EVENT_BEFORE_USER_LOGIN = 'auth0_beforeUserLogin';
 
     // Private Properties
     // =========================================================================
@@ -137,7 +143,7 @@ class AuthController extends Controller
                 $user->email = $auth0UserInfo['email'];
                 $user->username = $user->email;
 
-                // TODO: set this from the metadata via config params
+                // TODO: set this from the $auth0UserInfo metadata via config params, or leave to the BeforeUserCreatedEvent?
                 $nameParts = explode(' ', $auth0UserInfo['name']);
                 if (count($nameParts) >= 2) {
                     $user->firstName = $nameParts[0];
@@ -145,7 +151,7 @@ class AuthController extends Controller
                 }
 
                 // Give plugins a chance to modify the user before its created
-                $event = new BeforeUserCreated([
+                $event = new BeforeUserCreatedEvent([
                     'user' => $user,
                     'auth0UserInfo' => $auth0UserInfo,
                 ]);
@@ -179,6 +185,15 @@ class AuthController extends Controller
             }
 
             // TODO: check we have a user after user creation, throw hard error if not
+
+            // There is now a user, so fire an event before we log them in to give plugins
+            // a chance to either fail the login or modify the user
+            // TODO: allow event to cancel the login
+            $event = new BeforeUserLoginEvent([
+                'user' => $user,
+                'auth0UserInfo' => $auth0UserInfo,
+            ]);
+            $this->trigger(self::EVENT_BEFORE_USER_LOGIN, $event);
 
             // Log them in
             $generalConfig = Craft::$app->getConfig()->getGeneral();
