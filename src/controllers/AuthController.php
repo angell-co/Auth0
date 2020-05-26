@@ -33,13 +33,18 @@ class AuthController extends Controller
      */
     private $_auth0;
 
+    /**
+     * @var bool|\craft\base\Model|null
+     */
+    private $_settings;
+
     // Protected Properties
     // =========================================================================
 
     /**
      * @inheritdoc
      */
-    protected $allowAnonymous = self::ALLOW_ANONYMOUS_LIVE;
+    protected $allowAnonymous = true;
 
     // Public Methods
     // =========================================================================
@@ -55,12 +60,14 @@ class AuthController extends Controller
      */
     public function __construct($id, $module, $config = [])
     {
+        $this->_settings = Auth0Plugin::$plugin->getSettings();
+
         $this->_auth0 = new Auth0([
             // TODO: envs in config
-            'domain' => getenv('AUTH0_DOMAIN'),
-            'client_id' => getenv('AUTH0_CLIENT_ID'),
-            'client_secret' => getenv('AUTH0_CLIENT_SECRET'),
-            'redirect_uri' => getenv('AUTH0_CALLBACK_URL'),
+            'domain' => $this->_settings->domain,
+            'client_id' => $this->_settings->clientId,
+            'client_secret' => $this->_settings->clientSecret,
+            'redirect_uri' => $this->_settings->callbackUrl,
             'scope' => 'openid profile email',
         ]);
 

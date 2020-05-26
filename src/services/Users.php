@@ -25,16 +25,4 @@ class Users extends Component
     // Public Methods
     // =========================================================================
 
-    /*
-     * @return mixed
-     */
-    public function exampleService()
-    {
-        $result = 'something';
-        // Check our Plugin's settings for `someAttribute`
-        if (Auth0::$plugin->getSettings()->someAttribute) {
-        }
-
-        return $result;
-    }
 }

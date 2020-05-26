@@ -23,8 +23,8 @@
  */
 
 return [
-
-    // This controls blah blah blah
-    "someAttribute" => true,
-
+    'domain' => getenv('AUTH0_DOMAIN'),
+    'clientId' => getenv('AUTH0_CLIENT_ID'),
+    'clientSecret' => getenv('AUTH0_CLIENT_SECRET'),
+    'callbackUrl' => getenv('AUTH0_CALLBACK_URL'),
 ];

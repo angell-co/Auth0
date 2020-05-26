@@ -28,19 +28,20 @@ class Settings extends Model
     /**
      * @var string
      */
-    public $someAttribute = 'Some Default';
-
-    // Public Methods
-    // =========================================================================
+    public $domain;
 
     /**
-     * @inheritdoc
+     * @var string
      */
-    public function rules()
-    {
-        return [
-            ['someAttribute', 'string'],
-            ['someAttribute', 'default', 'value' => 'Some Default'],
-        ];
-    }
+    public $clientId;
+
+    /**
+     * @var string
+     */
+    public $clientSecret;
+
+    /**
+     * @var string
+     */
+    public $callbackUrl;
 }
