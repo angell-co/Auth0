@@ -63,7 +63,6 @@ class AuthController extends Controller
         $this->_settings = Auth0Plugin::$plugin->getSettings();
 
         $this->_auth0 = new Auth0([
-            // TODO: envs in config
             'domain' => $this->_settings->domain,
             'client_id' => $this->_settings->clientId,
             'client_secret' => $this->_settings->clientSecret,
