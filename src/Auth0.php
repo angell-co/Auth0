@@ -10,18 +10,10 @@
 
 namespace angellco\auth0;
 
-use angellco\auth0\services\Auth as AuthService;
-use angellco\auth0\services\Users as UsersService;
 use angellco\auth0\models\Settings;
 
 use Craft;
 use craft\base\Plugin;
-use craft\services\Plugins;
-use craft\events\PluginEvent;
-use craft\web\UrlManager;
-use craft\events\RegisterUrlRulesEvent;
-
-use yii\base\Event;
 
 /**
  * Class Auth0
@@ -29,9 +21,6 @@ use yii\base\Event;
  * @author    Angell & Co
  * @package   Auth0
  * @since     1.0.0
- *
- * @property  AuthService $auth
- * @property  UsersService $users
  */
 class Auth0 extends Plugin
 {

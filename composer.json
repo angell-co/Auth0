@@ -37,10 +37,6 @@
         "developerUrl": "https://angell.io",
         "documentationUrl": "https://github.com/angell-co/auth0/blob/master/README.md",
         "changelogUrl": "https://raw.githubusercontent.com/angell-co/auth0/master/CHANGELOG.md",
-        "components": {
-            "auth": "angellco\\auth0\\services\\Auth",
-            "users": "angellco\\auth0\\services\\Users"
-        },
         "class": "angellco\\auth0\\Auth0"
     }
 }
