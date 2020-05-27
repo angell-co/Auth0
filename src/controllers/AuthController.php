@@ -82,8 +82,10 @@ class AuthController extends Controller
      */
     public function __construct($id, $module, $config = [])
     {
+        // Cache the plugin settings
         $this->_settings = Auth0Plugin::$plugin->getSettings();
 
+        // Instantiate the base Auth0 SDK
         $this->_auth0 = new Auth0([
             'domain' => $this->_settings->domain,
             'client_id' => $this->_settings->clientId,
@@ -212,22 +214,19 @@ class AuthController extends Controller
     }
 
     /**
-     * TODO
+     * Logs out the user from Craft and Auth0.
      *
-     * ENV the logout return URI
-     * Also handle being logged out of Auth0 but still logged in to Craft, what happens then?
+     * TODO handle being logged out of Auth0 but still logged in to Craft, what happens then?
+     *
+     * @return Response
      */
     public function actionLogout()
     {
-        $userSession = Craft::$app->getUser();
-        $userSession->logout(true);
+        Craft::$app->getUser()->logout(false);
 
         $this->_auth0->logout();
-        // TODO: env in config - or same as craft core one
-        $return_to = 'https://' . $_SERVER['HTTP_HOST'].'/auth0-test';
-        // TODO: env in config
-        $logout_url = sprintf('https://%s/v2/logout?client_id=%s&returnTo=%s', getenv('AUTH0_DOMAIN'), getenv('AUTH0_CLIENT_ID'), $return_to);
-        header('Location: ' . $logout_url);
-        exit;
+        $logoutUrl = sprintf('https://%s/v2/logout?client_id=%s&returnTo=%s', $this->_settings->domain, $this->_settings->clientId, $this->_settings->logoutReturnUrl);
+
+        return $this->redirect($logoutUrl);
     }
 }

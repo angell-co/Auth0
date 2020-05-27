@@ -26,27 +26,32 @@ class Settings extends Model
     // =========================================================================
 
     /**
-     * @var string
+     * @var string|null
      */
     public $domain;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $clientId;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $clientSecret;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $callbackUrl;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $userGroupHandle;
+
+    /**
+     * @var string|null
+     */
+    public $logoutReturnUrl;
 }

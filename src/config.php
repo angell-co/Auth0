@@ -23,9 +23,10 @@
  */
 
 return [
-    'domain' => getenv('AUTH0_DOMAIN'),
-    'clientId' => getenv('AUTH0_CLIENT_ID'),
-    'clientSecret' => getenv('AUTH0_CLIENT_SECRET'),
-    'callbackUrl' => getenv('AUTH0_CALLBACK_URL'),
-    'userGroupHandle' => null
+    'domain' => null,
+    'clientId' => null,
+    'clientSecret' => null,
+    'callbackUrl' => null,
+    'userGroupHandle' => null,
+    'logoutReturnUrl' => null
 ];
