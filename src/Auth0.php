@@ -46,16 +46,6 @@ class Auth0 extends Plugin
      */
     public $schemaVersion = '1.0.0';
 
-    /**
-     * @var bool
-     */
-    public $hasCpSettings = true;
-
-    /**
-     * @var bool
-     */
-    public $hasCpSection = false;
-
     // Public Methods
     // =========================================================================
 

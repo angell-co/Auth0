@@ -81,6 +81,10 @@ class Auth extends Component
             'client_secret' => $this->_settings->clientSecret,
             'redirect_uri' => $this->_settings->callbackUrl,
             'scope' => 'openid profile email',
+
+            // Needed for Auth0 to access our session storage
+            // TODO: test whether this works if we override the core Craft session with something like redis
+            'store' => Craft::$app->getSession()
         ]);
 
         parent::__construct($config);
@@ -193,6 +197,7 @@ class Auth extends Component
         $this->trigger(self::EVENT_BEFORE_USER_LOGIN, $event);
 
         // Log them in
+        // TODO: use session duration from Auth0
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         return Craft::$app->getUser()->login($user, $generalConfig->userSessionDuration);
     }
