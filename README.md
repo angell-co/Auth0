@@ -22,13 +22,13 @@ To install the plugin, follow these instructions.
 
 3. In the Control Panel, go to Settings → Plugins and click the “Install” button for Auth0.
 
-## Auth0 Overview
+## Overview
 
 [Auth0](https://auth0.com/) is a service that allows you to rapidly integrate Universal Login, Single Sign On (SSO), Multifactor Authentication and more into your website or application.
 
 You can use this plugin to frictionlessly integrate your Craft site with Auth0.
 
-## Configuring Auth0
+## Configuration
 
 Before you get going with this plugin you’ll want to set up an application on Auth0, choose the "Regular Web Application" option at this stage and don’t worry about filling in the rest of the settings as we’ll get to that later.
 
@@ -46,14 +46,14 @@ URL for callback is `https://myproject.test/actions/auth0/auth/callback`.
 
 "Allowed Logout URLs" setting should match what is set in `logoutReturnUrl` config variable.
 
-## Using Auth0
+## Usage
 
 TODO
 
 - Login action: `{{ actionUrl('auth0/auth/login') }}` - logs in to both Auth0 and Craft and silently creates and activates a user if there isn’t one 
 - Logout action: `{{ actionUrl('auth0/auth/logout') }}` - just logs out Auth0, use regular Craft logout action or URL to be logged out of both
 
-## Auth0 Roadmap
+## Roadmap
 
 Some things to do, and ideas for potential features:
 
