@@ -57,7 +57,7 @@ TODO
 
 Some things to do, and ideas for potential features:
 
-- [ ] Release it
+- [x] Release it
 - [ ] Add option to _not_ automatically create new users
 - [ ] Add the default login route
 - [ ] Document the config file
