@@ -1,6 +1,8 @@
-# Auth0 plugin for Craft CMS 3.x
+# Auth0
 
 Use Auth0 with Craft.
+
+![Banner](resources/img/banner.png)
 
 ## Requirements
 
