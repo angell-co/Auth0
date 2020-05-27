@@ -1,6 +1,6 @@
 {
     "name": "angellco/auth0",
-    "description": "Use Auth0 SS0 alongside the core Craft login.",
+    "description": "Use Auth0 with Craft.",
     "type": "craft-plugin",
     "keywords": [
         "craft",
@@ -22,7 +22,7 @@
         }
     ],
     "require": {
-        "craftcms/cms": "^3.0.0",
+        "craftcms/cms": "^3.1.0",
         "auth0/auth0-php": "^7.0.0"
     },
     "autoload": {
