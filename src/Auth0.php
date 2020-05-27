@@ -11,6 +11,7 @@
 namespace angellco\auth0;
 
 use angellco\auth0\models\Settings;
+use angellco\auth0\services\Auth as AuthService;
 
 use Craft;
 use craft\base\Plugin;
@@ -21,6 +22,8 @@ use craft\base\Plugin;
  * @author    Angell & Co
  * @package   Auth0
  * @since     1.0.0
+ *
+ * @property  AuthService $auth
  */
 class Auth0 extends Plugin
 {
