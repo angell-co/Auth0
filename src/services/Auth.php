@@ -10,11 +10,10 @@
 
 namespace angellco\auth0\services;
 
-use angellco\auth0\Auth0 as Auth0Plugin;
+use angellco\auth0\Auth0;
 use angellco\auth0\events\BeforeUserCreatedEvent;
 use angellco\auth0\events\BeforeUserLoginEvent;
 use angellco\auth0\models\Settings;
-use Auth0\SDK\Auth0;
 use Auth0\SDK\Auth0 as Auth0SDK;
 use Auth0\SDK\Exception\ApiException;
 use Auth0\SDK\Exception\CoreException;
@@ -72,10 +71,10 @@ class Auth extends Component
     public function __construct($config = [])
     {
         // Cache the plugin settings
-        $this->_settings = Auth0Plugin::$plugin->getSettings();
+        $this->_settings = Auth0::$plugin->getSettings();
 
         // Instantiate the base Auth0 SDK
-        $this->_auth0 = new Auth0([
+        $this->_auth0 = new Auth0SDK([
             'domain' => $this->_settings->domain,
             'client_id' => $this->_settings->clientId,
             'client_secret' => $this->_settings->clientSecret,
