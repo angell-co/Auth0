@@ -67,6 +67,8 @@ Some things to do, and ideas for potential features:
 - [ ] Add twig variable so we can get at the user data in templates
 - [ ] Handle being logged out of Auth0 but still logged in to Craft, what happens then?
 - [ ] Allow the `EVENT_BEFORE_USER_LOGIN` event to cancel the login attempt
-- [ ] Use session duration from Auth0 and add option to override this to use Craft’s 
+- [ ] Use session duration from Auth0 and add option to override this to use Craft’s
+
+--- 
 
 Brought to you by [Angell & Co](https://angell.io)
