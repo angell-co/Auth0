@@ -15,6 +15,9 @@ use angellco\auth0\services\Auth as AuthService;
 
 use Craft;
 use craft\base\Plugin;
+use yii\base\Event;
+use yii\web\User;
+use yii\web\UserEvent;
 
 /**
  * Class Auth0
@@ -63,6 +66,16 @@ class Auth0 extends Plugin
     {
         parent::init();
         self::$plugin = $this;
+
+        // Bind to the after logout event so we can clear the Auth0 session
+        Event::on(
+            User::class,
+            User::EVENT_AFTER_LOGOUT,
+            function (UserEvent $event) {
+                // TODO: hit service
+                // Check if there is an active Auth0 connection
+            }
+        );
 
         Craft::info(
             Craft::t(
