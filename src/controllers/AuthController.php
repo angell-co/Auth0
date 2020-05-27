@@ -2,7 +2,7 @@
 /**
  * Auth0 plugin for Craft CMS 3.x
  *
- * Use Auth0 SS0 alongside the core Craft login.
+ * Use Auth0 with Craft.
  *
  * @link      https://angell.io
  * @copyright Copyright (c) 2020 Angell & Co
@@ -10,10 +10,15 @@
 
 namespace angellco\auth0\controllers;
 
-use angellco\auth0\Auth0;
 
+use angellco\auth0\Auth0;
 use Craft;
+use craft\errors\ElementNotFoundException;
+use craft\errors\MissingComponentException;
 use craft\web\Controller;
+use yii\base\Exception;
+use yii\web\BadRequestHttpException;
+use yii\web\Response;
 
 /**
  * @author    Angell & Co
@@ -27,32 +32,61 @@ class AuthController extends Controller
     // =========================================================================
 
     /**
-     * @var    bool|array Allows anonymous access to this controller's actions.
-     *         The actions must be in 'kebab-case'
-     * @access protected
+     * @inheritdoc
      */
-    protected $allowAnonymous = ['index', 'do-something'];
+    protected $allowAnonymous = true;
 
     // Public Methods
     // =========================================================================
 
     /**
-     * @return mixed
+     * Log in to Auth0.
      */
-    public function actionIndex()
+    public function actionLogin()
     {
-        $result = 'Welcome to the AuthController actionIndex() method';
-
-        return $result;
+        Auth0::$plugin->auth->login();
     }
 
     /**
-     * @return mixed
+     * Handles the Auth0 callback.
+     *
+     * @return Response|null
+     * @throws BadRequestHttpException
+     * @throws ElementNotFoundException
+     * @throws Exception
+     * @throws MissingComponentException
+     * @throws \Throwable
      */
-    public function actionDoSomething()
+    public function actionCallback()
     {
-        $result = 'Welcome to the AuthController actionDoSomething() method';
+        // Try the callback handler first
+        if (!Auth0::$plugin->auth->handleCallback()) {
+            return null;
+        }
 
-        return $result;
+        // If we got this far we can redirect properly
+        $userSession = Craft::$app->getUser();
+        $session = Craft::$app->getSession();
+
+        // Get the return URL
+        $returnUrl = $userSession->getReturnUrl();
+
+        // Clear it out
+        $userSession->removeReturnUrl();
+
+        // Set the logged in notice and redirect
+        $session->setNotice(Craft::t('app', 'Logged in.'));
+        return $this->redirectToPostedUrl($userSession->getIdentity(), $returnUrl);
+    }
+
+    /**
+     * Logs out the user from Auth0 and redirects to the correct URL.
+     *
+     * @return Response
+     */
+    public function actionLogout()
+    {
+        $logoutUrl = Auth0::$plugin->auth->logout();
+        return $this->redirect($logoutUrl);
     }
 }

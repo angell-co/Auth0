@@ -2,7 +2,7 @@
 /**
  * Auth0 plugin for Craft CMS 3.x
  *
- * Use Auth0 SS0 alongside the core Craft login.
+ * Use Auth0 with Craft.
  *
  * @link      https://angell.io
  * @copyright Copyright (c) 2020 Angell & Co
@@ -10,18 +10,14 @@
 
 namespace angellco\auth0;
 
-use angellco\auth0\services\Auth as AuthService;
-use angellco\auth0\services\Users as UsersService;
 use angellco\auth0\models\Settings;
+use angellco\auth0\services\Auth as AuthService;
 
 use Craft;
 use craft\base\Plugin;
-use craft\services\Plugins;
-use craft\events\PluginEvent;
-use craft\web\UrlManager;
-use craft\events\RegisterUrlRulesEvent;
-
 use yii\base\Event;
+use yii\web\User;
+use yii\web\UserEvent;
 
 /**
  * Class Auth0
@@ -31,7 +27,6 @@ use yii\base\Event;
  * @since     1.0.0
  *
  * @property  AuthService $auth
- * @property  UsersService $users
  */
 class Auth0 extends Plugin
 {
@@ -51,16 +46,6 @@ class Auth0 extends Plugin
      */
     public $schemaVersion = '1.0.0';
 
-    /**
-     * @var bool
-     */
-    public $hasCpSettings = true;
-
-    /**
-     * @var bool
-     */
-    public $hasCpSection = false;
-
     // Public Methods
     // =========================================================================
 
@@ -72,28 +57,13 @@ class Auth0 extends Plugin
         parent::init();
         self::$plugin = $this;
 
+        // Bind to the after logout event so we can clear the Auth0 session
         Event::on(
-            UrlManager::class,
-            UrlManager::EVENT_REGISTER_SITE_URL_RULES,
-            function (RegisterUrlRulesEvent $event) {
-                $event->rules['siteActionTrigger1'] = 'auth0/auth';
-            }
-        );
-
-        Event::on(
-            UrlManager::class,
-            UrlManager::EVENT_REGISTER_CP_URL_RULES,
-            function (RegisterUrlRulesEvent $event) {
-                $event->rules['cpActionTrigger1'] = 'auth0/auth/do-something';
-            }
-        );
-
-        Event::on(
-            Plugins::class,
-            Plugins::EVENT_AFTER_INSTALL_PLUGIN,
-            function (PluginEvent $event) {
-                if ($event->plugin === $this) {
-                }
+            User::class,
+            User::EVENT_AFTER_LOGOUT,
+            function (UserEvent $event) {
+                $logoutUrl = $this->auth->logout();
+                Craft::$app->getResponse()->redirect($logoutUrl)->send();
             }
         );
 
@@ -116,18 +86,5 @@ class Auth0 extends Plugin
     protected function createSettingsModel()
     {
         return new Settings();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function settingsHtml(): string
-    {
-        return Craft::$app->view->renderTemplate(
-            'auth0/settings',
-            [
-                'settings' => $this->getSettings()
-            ]
-        );
     }
 }

@@ -2,7 +2,7 @@
 /**
  * Auth0 plugin for Craft CMS 3.x
  *
- * Use Auth0 SS0 alongside the core Craft login.
+ * Use Auth0 with Craft.
  *
  * @link      https://angell.io
  * @copyright Copyright (c) 2020 Angell & Co
@@ -26,21 +26,32 @@ class Settings extends Model
     // =========================================================================
 
     /**
-     * @var string
+     * @var string|null
      */
-    public $someAttribute = 'Some Default';
-
-    // Public Methods
-    // =========================================================================
+    public $domain;
 
     /**
-     * @inheritdoc
+     * @var string|null
      */
-    public function rules()
-    {
-        return [
-            ['someAttribute', 'string'],
-            ['someAttribute', 'default', 'value' => 'Some Default'],
-        ];
-    }
+    public $clientId;
+
+    /**
+     * @var string|null
+     */
+    public $clientSecret;
+
+    /**
+     * @var string|null
+     */
+    public $callbackUrl;
+
+    /**
+     * @var string|null
+     */
+    public $userGroupHandle;
+
+    /**
+     * @var string|null
+     */
+    public $logoutReturnUrl;
 }
