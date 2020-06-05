@@ -22,6 +22,8 @@ use craft\base\Component;
 use craft\elements\User;
 use craft\errors\ElementNotFoundException;
 use craft\errors\MissingComponentException;
+use craft\helpers\Stringy;
+use craft\helpers\UrlHelper;
 use craft\helpers\User as UserHelper;
 use yii\base\Exception;
 
@@ -215,7 +217,12 @@ class Auth extends Component
 
     /**
      * Attempts to silently login to Craft if there is already an active Auth0
-     * session.
+     * session and if not checks the referrer to see if we should automatically
+     * redirect to the Auth0 login. If the latter happens and there is already
+     * an active session there then Auth0 will simply redirect back to our
+     * callback and then that will redirect back to the current return URL.
+     *
+     * @param null|string $referer The referer to match against.
      *
      * @throws ApiException
      * @throws CoreException
@@ -224,9 +231,9 @@ class Auth extends Component
      * @throws MissingComponentException
      * @throws \Throwable
      */
-    public function silentLogin()
+    public function silentLogin($referer = null)
     {
-        // Check if we already have a session, and if the0 callback validates
+        // Check if we already have a session, and if the callback validates
         if ($this->getUser() && $this->handleCallback()) {
             // If we got this far we can redirect properly
             $userSession = Craft::$app->getUser();
@@ -241,6 +248,12 @@ class Auth extends Component
             // Set the logged in notice and redirect
             $session->setNotice(Craft::t('app', 'Logged in.'));
             Craft::$app->getResponse()->redirect($returnUrl);
+        }
+
+        // If we have a referer, then check the actual referer passes the whitelist
+        // of passed in values and if so, force Auth0 login
+        if ($referer !== null && Stringy::create(Craft::$app->getRequest()->referrer)->contains($referer, false)) {
+            $this->_auth0->login();
         }
     }
 
