@@ -13,8 +13,10 @@ namespace angellco\auth0;
 use angellco\auth0\models\Settings;
 use angellco\auth0\services\Auth as AuthService;
 
+use angellco\auth0\variables\Auth0Variable;
 use Craft;
 use craft\base\Plugin;
+use craft\web\twig\variables\CraftVariable;
 use yii\base\Event;
 use yii\web\User;
 use yii\web\UserEvent;
@@ -57,13 +59,25 @@ class Auth0 extends Plugin
         parent::init();
         self::$plugin = $this;
 
+        // Register the variable
+        Event::on(
+            CraftVariable::class,
+            CraftVariable::EVENT_INIT,
+            function (Event $event) {
+                /** @var CraftVariable $variable */
+                $variable = $event->sender;
+                $variable->set('auth0', new Auth0Variable());
+            }
+        );
+
         // Bind to the after logout event so we can clear the Auth0 session
         Event::on(
             User::class,
             User::EVENT_AFTER_LOGOUT,
             function (UserEvent $event) {
-                $logoutUrl = $this->auth->logout();
-                Craft::$app->getResponse()->redirect($logoutUrl)->send();
+                if ($this->auth->getUser() && $logoutUrl = $this->auth->logout()) {
+                    Craft::$app->getResponse()->redirect($logoutUrl)->send();
+                }
             }
         );
 
