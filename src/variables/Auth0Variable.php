@@ -31,17 +31,22 @@ class Auth0Variable
 
     /**
      * Attempts to silently login to Craft if there is already an active Auth0
-     * session.
+     * session and if not checks the referrer to see if we should automatically
+     * redirect to the Auth0 login. If the latter happens and there is already
+     * an active session there then Auth0 will simply redirect back to our
+     * callback and then that will redirect back to the current return URL.
+     *
+     * @param null|string $referer The referer to match against.
      *
      * @throws ApiException
      * @throws CoreException
-     * @throws \Throwable
      * @throws ElementNotFoundException
-     * @throws MissingComponentException
      * @throws Exception
+     * @throws MissingComponentException
+     * @throws \Throwable
      */
-    public function silentLogin()
+    public function silentLogin($referer = null)
     {
-        return Auth0::$plugin->auth->silentLogin();
+        return Auth0::$plugin->auth->silentLogin($referer);
     }
 }

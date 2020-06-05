@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## 1.1.1 - 2020-06-05
+### Added
+- Added referer matching to the silent login. This covers the situation where the client is logged in to Auth0 from another application than ours - you can pass the domain of that application in as the referrer and it will then auto-redirect to the Auth0 login URL, which in turn will redirect back to our site and log them in: `{% do craft.auth0.silentLogin(someapp.com) %}`
+
+
 ## 1.1.0 - 2020-06-05
 ### Added
 - Added a variable and service method that attempts to silently log in to Craft if there is already an active Auth0 session: `{% do craft.auth0.silentLogin() %}`
