@@ -22,7 +22,7 @@ use yii\base\Exception;
  *
  * @author    Angell & Co
  * @package   Auth0
- * @since     1.0.2
+ * @since     1.1.0
  */
 class Auth0Variable
 {
