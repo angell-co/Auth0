@@ -213,4 +213,35 @@ class Auth extends Component
         return $this->_auth0->getUser();
     }
 
+    /**
+     * Attempts to silently login to Craft if there is already an active Auth0
+     * session.
+     *
+     * @throws ApiException
+     * @throws CoreException
+     * @throws ElementNotFoundException
+     * @throws Exception
+     * @throws MissingComponentException
+     * @throws \Throwable
+     */
+    public function silentLogin()
+    {
+        // Check if we already have a session, and if the0 callback validates
+        if ($this->getUser() && $this->handleCallback()) {
+            // If we got this far we can redirect properly
+            $userSession = Craft::$app->getUser();
+            $session = Craft::$app->getSession();
+
+            // Get the return URL
+            $returnUrl = $userSession->getReturnUrl();
+
+            // Clear it out
+            $userSession->removeReturnUrl();
+
+            // Set the logged in notice and redirect
+            $session->setNotice(Craft::t('app', 'Logged in.'));
+            Craft::$app->getResponse()->redirect($returnUrl);
+        }
+    }
+
 }
