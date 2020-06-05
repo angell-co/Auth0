@@ -62,8 +62,9 @@ class Auth0 extends Plugin
             User::class,
             User::EVENT_AFTER_LOGOUT,
             function (UserEvent $event) {
-                $logoutUrl = $this->auth->logout();
-                Craft::$app->getResponse()->redirect($logoutUrl)->send();
+                if ($this->auth->getUser() && $logoutUrl = $this->auth->logout()) {
+                    Craft::$app->getResponse()->redirect($logoutUrl)->send();
+                }
             }
         );
 
