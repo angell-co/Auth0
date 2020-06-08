@@ -289,6 +289,7 @@ class Auth extends Component
                 }
                 if ($passedParams === count($queryParamSet)) {
                     $this->_auth0->login();
+                    break;
                 }
             }
         }
