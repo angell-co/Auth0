@@ -22,6 +22,7 @@ use craft\base\Component;
 use craft\elements\User;
 use craft\errors\ElementNotFoundException;
 use craft\errors\MissingComponentException;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Stringy;
 use craft\helpers\UrlHelper;
 use craft\helpers\User as UserHelper;
@@ -218,11 +219,16 @@ class Auth extends Component
     /**
      * Attempts to silently login to Craft if there is already an active Auth0
      * session and if not checks the referrer to see if we should automatically
-     * redirect to the Auth0 login. If the latter happens and there is already
-     * an active session there then Auth0 will simply redirect back to our
-     * callback and then that will redirect back to the current return URL.
+     * redirect to the Auth0 login. If there is no referrer or its not in the
+     * given whitelist then it will fall back to checking the given whitelist of
+     * query params.
      *
-     * @param null|string $referer The referer to match against.
+     * If the latter happens and there is already an active session there then
+     * Auth0 will simply redirect back to our callback and then that will
+     * redirect back to the current return URL.
+     *
+     * @param null|string|array $referrerWhitelist The referrer(s) to match against.
+     * @param null|string|array $queryParamWhitelist The query param(s) to match against.
      *
      * @throws ApiException
      * @throws CoreException
@@ -231,8 +237,17 @@ class Auth extends Component
      * @throws MissingComponentException
      * @throws \Throwable
      */
-    public function silentLogin($referer = null)
+    public function silentLogin($referrerWhitelist = null, $queryParamWhitelist = null)
     {
+        // Normalise the params
+        if ($referrerWhitelist !== null && is_string($referrerWhitelist)) {
+            $referrerWhitelist = [$referrerWhitelist];
+        }
+
+        if ($queryParamWhitelist !== null && ArrayHelper::isAssociative($queryParamWhitelist)) {
+            $queryParamWhitelist = [$queryParamWhitelist];
+        }
+
         // Check if we already have a session, and if the callback validates
         if ($this->getUser() && $this->handleCallback()) {
             // If we got this far we can redirect properly
@@ -250,11 +265,32 @@ class Auth extends Component
             Craft::$app->getResponse()->redirect($returnUrl);
         }
 
+        $request = Craft::$app->getRequest();
+
         // If we have a referer, then check the actual referer passes the whitelist
         // of passed in values and if so, force Auth0 login
-        if ($referer !== null && Stringy::create(Craft::$app->getRequest()->referrer)->contains($referer, false)) {
-            $this->_auth0->login();
+        if (is_array($referrerWhitelist)) {
+            foreach ($referrerWhitelist as $referrer) {
+                if (Stringy::create($request->referrer)->contains($referrer, false)) {
+                    $this->_auth0->login();
+                    break;
+                }
+            }
+        }
+
+        // If we got this far, then we have no referrer, so check the query params
+        if (is_array($queryParamWhitelist)) {
+            foreach ($queryParamWhitelist as $queryParamSet) {
+                $passedParams = 0;
+                foreach ($queryParamSet as $queryParamKey => $queryParamValue) {
+                    if ($request->getParam($queryParamKey) === $queryParamValue) {
+                        $passedParams++;
+                    }
+                }
+                if ($passedParams === count($queryParamSet)) {
+                    $this->_auth0->login();
+                }
+            }
         }
     }
-
 }
