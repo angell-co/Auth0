@@ -54,4 +54,14 @@ class Settings extends Model
      * @var string|null
      */
     public $logoutReturnUrl;
+
+    /**
+     * @var string|null
+     */
+    public $uniqueUserFieldHandle;
+
+    /**
+     * @var string|null
+     */
+    public $uniqueUserFieldMetaKey;
 }

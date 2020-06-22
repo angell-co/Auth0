@@ -126,6 +126,7 @@ class Auth extends Component
      */
     public function handleCallback()
     {
+        $user = null;
         $auth0UserInfo = $this->getUser();
 
         $users = Craft::$app->getUsers();
@@ -137,10 +138,19 @@ class Auth extends Component
             return null;
         }
 
-        // Get the Craft user if we can
-        $user = $users->getUserByUsernameOrEmail($auth0UserInfo['email']);
+        // First try and get Craft user by custom field
+        if ($this->_settings->uniqueUserFieldHandle && $this->_settings->uniqueUserFieldMetaKey && isset($auth0UserInfo[$this->_settings->uniqueUserFieldMetaKey]) && !empty($auth0UserInfo[$this->_settings->uniqueUserFieldMetaKey])) {
+            $user = User::findOne([
+                $this->_settings->uniqueUserFieldHandle => $auth0UserInfo[$this->_settings->uniqueUserFieldMetaKey]
+            ]);
+        }
 
-        // There isn’t one, so create it first
+        // Get the Craft user if we can
+        if (!$user) {
+            $user = $users->getUserByUsernameOrEmail($auth0UserInfo['email']);
+        }
+
+        // There still isn’t one, so create it
         if (!$user) {
 
             $user = new User();

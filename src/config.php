@@ -28,5 +28,7 @@ return [
     'clientSecret' => null,
     'callbackUrl' => null,
     'userGroupHandle' => null,
-    'logoutReturnUrl' => null
+    'logoutReturnUrl' => null,
+    'uniqueUserFieldHandle' => null,
+    'uniqueUserFieldMetaKey' => null
 ];
