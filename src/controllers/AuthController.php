@@ -86,6 +86,7 @@ class AuthController extends Controller
      */
     public function actionLogout()
     {
+        Craft::$app->getUser()->logout(false);
         $logoutUrl = Auth0::$plugin->auth->logout();
         return $this->redirect($logoutUrl);
     }
